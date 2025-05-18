@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
+
 const App = () => {
   const [nombreCancion, setNombreCancion] = useState('');
   const [url, setUrl] = useState('');
@@ -12,6 +13,7 @@ const App = () => {
   const [ordenarPorReproducciones, setOrdenarPorReproducciones] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState('');
 
   useEffect(() => {
     const storedItems = JSON.parse(localStorage.getItem('myItems')) || [];
@@ -91,6 +93,8 @@ const manejarCambioUrl = (e) => {
     };
   
     setItems(prevItems => [...prevItems, nuevoItem]);
+    setMensajeExito('✅ Canción agregada a la lista');
+    setTimeout(() => setMensajeExito(''), 3000); // Desaparece en 3 segundos
   
     // Limpiar campos
     setNombreCancion('');
@@ -112,41 +116,45 @@ const handleDelete = (videoIdToDelete) => {
   }
 };
 
-  const Modal = ({ videoId, onClose }) => {
+
+const Modal = ({ videoId, onClose }) => {
   if (!videoId) return null;
 
   return (
-    
-    <div 
+    <div
       onClick={onClose}
-          style={{
+      style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-        zIndex: 1000, // Asegura que el modal esté encima de otros elementos
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        zIndex: 1000,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden',
+        padding: '20px',
       }}
     >
-      <div className='ventana'
-        onClick={(e) => e.stopPropagation()}     
-      >
+      <div className="ventana" onClick={(e) => e.stopPropagation()}>
         <iframe
-          key={videoId}
-          width="100%"
-          height="360"
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-          title="Reproductor de YouTube"         
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&rel=0`}
+          title="Reproductor de YouTube"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '10px',
+          }}
         ></iframe>
-        <button className="btnCerrar" onClick={onClose} style={{ marginTop: '10px' }}>Cerrar</button>
-      </div>
+
+        <button className="btnCerrar" onClick={onClose}>
+          Cerrar
+        </button>
+         </div>
     </div>
   );
 };
@@ -159,7 +167,7 @@ const handleDelete = (videoIdToDelete) => {
       </header>
 
       <main className="container mt-5">
-        <h2>LISTA TUS CANCIONES!</h2>
+        <h2 className="lista">LISTA TUS CANCIONES!</h2>
 
       <input
         type="text"
@@ -179,8 +187,9 @@ const handleDelete = (videoIdToDelete) => {
 
       <button className="btnGuardar" onClick={handleSave}>Guardar</button>
 
-      {errorMensaje && <p style={{ color: 'black' }}>{errorMensaje}</p>}
-      {!errorMensaje && esValido && url && <p style={{ color: 'white' }}>✅ Enlace válido</p>}
+      {errorMensaje && <p className="mensaje-erroneo">{errorMensaje}</p>}
+      {!errorMensaje && esValido && url && <p className="mensaje-valido">✅ Enlace válido</p>}
+      {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
 
 
       <div style={{ marginTop: '20px', marginBottom: '10px' }}>
@@ -193,6 +202,10 @@ const handleDelete = (videoIdToDelete) => {
     placeholder="Escribe el nombre de la cancion que deseas buscar..."
   />
 </div>
+
+{items.length === 0 && (
+  <p className='listavacia'>🎵 La lista está vacía. Agrega una canción para comenzar.</p>
+)}
 
   <ul>
   {(ordenarPorReproducciones ? [...items].sort((a, b) => b.reproducciones - a.reproducciones) : items)
